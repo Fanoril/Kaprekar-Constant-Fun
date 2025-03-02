@@ -75,7 +75,7 @@ def sort_numbers_by_digits(number: int, desc: bool) -> int:
     # VERY nasty sorting algorithm
     #
 
-    # initialise variables bei uncommon value - debug
+    # initialise variables with uncommon value - debug
     current_magnitude = -1
     rate_of_change_magnitude = 0
     if desc:
