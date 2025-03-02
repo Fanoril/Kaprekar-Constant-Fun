@@ -2,6 +2,7 @@
 
 
 from math import log10, ceil, floor
+import argparse
 
 """
 Filename: kaprekarConstant.py
@@ -11,7 +12,7 @@ Version: 0.1
 Description: Just a Script, that tries to calculate the
              Kaprekar Constant for a given Number.
 Licence: GPL-3.0
-Dependencies: log10, ceil, floor from math
+Dependencies: log10, ceil, floor from math, argparser
 """
 
 #
@@ -29,6 +30,7 @@ Dependencies: log10, ceil, floor from math
 # - fix sorting algorithm
 # - optimize if-else-statement in sorting algorithm
 # - implement special case for zykel
+# - implement rough argparser
 #
 
 
@@ -107,7 +109,7 @@ def sort_numbers_by_digits(number: int, desc: bool) -> int:
     return sorted_number
 
 
-def kaprekar_algorithm(number: int, *args):
+def get_kaprekar_constant(number: int, *args):
     """
     Returns a tupel of
     -the kaprekar constant of one given number and
@@ -197,17 +199,57 @@ def kaprekar_algorithm(number: int, *args):
 
 
 def main():
-    number: str = input("Which number do you want to try?   ")
-    kaprekar_tupel = kaprekar_algorithm(int(number))
-    if kaprekar_tupel == (0, 0, ...):
-        print("Error!")
-    else:
-        if kaprekar_tupel[2]:  # if there is a zykel
-            print("There is a Zykel with " + str(kaprekar_tupel[0]) +
-                  " after " + str(kaprekar_tupel[1]) + " Iterations.")
+    #
+    # Parser things:
+    # -h, --help; help
+    # -g, --get-constant; get a kaprekar constant by a given number
+    # -f, --find-constant; find new kaprekar constant by given digitnumber
+    #
+    parser = argparse.ArgumentParser(
+        prog='Kaprekar Constant Fun',
+        description='Simple Script to get and find kaprekar constants. ',
+        epilog='Everywhere is this number ... 6174')
+
+    parser.add_argument(
+        '-g',
+        '--get',
+        action="store_true",
+        help='Get-Mode: Get a kaprekar constant by a given number.')
+
+    parser.add_argument(
+        '-f',
+        '--find',
+        action="store_true",
+        help='Find-Mode: Find a kaprekar constant by given number of digits')
+
+    parser.add_argument(
+        "NUMBER",
+        type=int,
+        help="""In Get-Mode you get the kaprekar constant for the given NUMBER.
+        In Find-Mode the program tries to find a kaprekar constant for the
+        given NUMBER of digits.""")
+
+    args = parser.parse_args()
+
+    # Get kaprekar mode
+
+    if args.find:
+        print("Find-Mode")
+        pass
+    elif args.get:
+        print("Get-Mode")
+        kaprekar_tupel = get_kaprekar_constant(int(args.NUMBER))
+        if kaprekar_tupel == (0, 0, ...):
+            print("Error!")
         else:
-            print("The kaprekar constant is: " + str(kaprekar_tupel[0]) +
-                  " with " + str(kaprekar_tupel[1]) + " Iterations.")
+            if kaprekar_tupel[2]:  # if there is a zykel
+                print("There is a zykel with " + str(kaprekar_tupel[0]) +
+                      " after " + str(kaprekar_tupel[1]) + " iterations.")
+            else:
+                print("The kaprekar constant is: " + str(kaprekar_tupel[0]) +
+                      " with " + str(kaprekar_tupel[1]) + " iterations.")
+    else:
+        print("ERROR - pray and hope for the best!")
 
 
 if __name__ == "__main__":
