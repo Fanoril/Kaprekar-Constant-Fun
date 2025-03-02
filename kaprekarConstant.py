@@ -1,5 +1,5 @@
-
 # !/usr/bin/env Python3
+
 
 from math import log10, ceil, floor
 
@@ -14,8 +14,9 @@ Licence: GPL-3.0
 Dependencies: log10, ceil, floor from math
 """
 
+#
 # TODO:
-# 1) [fix : done] optimize  sorting algorithm
+# 1) optimize sorting algorithm
 # 2) implement Kaprekars Zykel like:
 #    71973 → 83952 → 74943 → 62964 → 71973 (with starting number 33363)
 # 3) implement special case for 2-, 5- and 7-digit-numbers;
@@ -23,6 +24,11 @@ Dependencies: log10, ceil, floor from math
 # 4) implement algorithm for new kaprekar-constants (or new zykels)
 # --- question: how many "iterations of a zykel" are needed,
 #               to prove the existence of a zykel?
+#
+# Done:
+# - fix sorting algorithm
+# - optimize if-else-statement in sorting algorithm
+#
 
 
 # Math fun
@@ -37,58 +43,73 @@ Parameters:
 Returns:
     sorted_number (int): sorted number
 """
-def sort_numbers_by_digits(number: int, desc : bool) -> int:
-    #Variables:
+
+
+def sort_numbers_by_digits(number: int, desc: bool) -> int:
+    #
+    # Variables:
     # - return Variable,
     # - order of magnitude of given number
     # - list for digits - index corresponds with digit (e.q. [5] = 5)
-    sorted_number : int = 0
-    order_of_magnitude : int = 0
-    number_of_digits : [int, ...] = [0,0,0,0,0,0,0,0,0,0]
+    sorted_number: int = 0
+    order_of_magnitude: int = 0
+    number_of_digits: [int, ...] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 
     # Analyse Number
     # Get the oder_of_magnitude by logarithmic magic
     order_of_magnitude = ceil(log10(number))
 
-    # Get digits by dividing and rounding up and more important get the number/amount of EACH digit in the number
-    n : int = number # Just to be safe
-    for current_power_of_ten in range(order_of_magnitude,0,-1):
-        digit = floor(n / (10**(current_power_of_ten-1))) # get the digit at the specifig point
-        number_of_digits[digit] += 1 # increment the amount of the specifig digit
-        n = n - digit*10**(current_power_of_ten-1) # new number to analyse
+    # Get digits by dividing and rounding up and
+    # more important get the number/amount of EACH digit in the number
+    n: int = number  # Just to be safe
+    for current_power_of_ten in range(order_of_magnitude, 0, -1):
+        # get the digit at the specifig point
+        digit = floor(n / (10 ** (current_power_of_ten - 1)))
+        # increment the amount of the specifig digit
+        number_of_digits[digit] += 1
+        # assign new number to analyse
+        n = n - digit * 10 ** (current_power_of_ten - 1)
 
-    #Rearange number - sorted
-    #VERY nasty sorting algorithm
     #
-    # shouldn't it be possible to merge the if- and else-Statement
-    #  in a elegant way? It's nearly the same steps
+    # Rearange number by digits
+    # VERY nasty sorting algorithm
     #
-    current_magnitude = order_of_magnitude
-    if(desc):
-        current_digit = 9 # starting by digit 9
-        rate_of_change_digit = -1 # descending order
-        while current_digit > 0: # For every 9,8,7, ... in the given number
-            if number_of_digits[current_digit] == 0: # if "none numbers" left
-                current_digit += rate_of_change_digit # decrease the current_digit
-            else:
-                current_magnitude -= 1 # decrease current magnitude
-                sorted_number += current_digit*10**current_magnitude # reconstruct number
-                number_of_digits[current_digit] -= 1 # decrease amount of this specific digit
 
-    else: # comments above
-        current_digit = 0
-        rate_of_change_digit = +1 # ascending order
-        while current_digit < 10:
-            if number_of_digits[current_digit] == 0:
-                current_digit += rate_of_change_digit
-            else:
-                current_magnitude -= 1
-                sorted_number += current_digit*10**current_magnitude
-                number_of_digits[current_digit] -= 1
+    # initialise variables bei uncommon value - debug
+    current_magnitude = -1
+    rate_of_change_magnitude = 0
+    if desc:
+        # if descending order: we start with max magnitude and decrease
+        current_magnitude = order_of_magnitude - 1
+        rate_of_change_magnitude = -1
+    else:
+        # if ascending order: we start with magnitude 0 and increase
+        current_magnitude = 0
+        rate_of_change_magnitude = +1
+
+    #
+    # iterate through all "number of digits"
+    # if none left: decrease current_digit
+    # else: rearange sorted number by power of 10s
+    #       change current_magnitude and number_of_digits for specifig digit
+    # Note: rate_of_change_magnitude and current_magnitude are initialised
+    #       above. For descending order the digit 9 should be in the "highest
+    #       magnitude", so we start at max magnitude and decrease. For
+    #       ascending order the digit 9 should be in the "smallest magnitude",
+    #       so we start a 0 and increase.
+    #
+
+    current_digit = 9
+    while current_digit > 0:
+        if number_of_digits[current_digit] == 0:
+            current_digit -= 1
+        else:
+            sorted_number += current_digit * 10 ** current_magnitude
+            current_magnitude += rate_of_change_magnitude
+            number_of_digits[current_digit] -= 1
+
     # return sorted number
     return sorted_number
-
-
 
 
 """
@@ -103,37 +124,37 @@ Returns:
     kaprekar_tupel (int,int): Tupel of the Kaprekar constant
                                 and the Iterations, to got there
 """
-def kaprekar_algorithm(number : int, *args)-> (int,int):
-    #Output 1
+
+
+def kaprekar_algorithm(number: int, *args) -> (int, int):
+    # Output 1
     print("Kaprekar Number?")
     print("----------------")
     print("Startnumber: " + str(number))
     print("----------------")
 
-    kaprekar_constant_list = (
-            0,
-            495,
-            6174,
-            549945,
-            631764,
-            63317664,
-            97508421,
-            554999445,
-            864197532,
-            6333176664,
-            9753086421,
-            9975084201,
-            86431976532,
-            555499994445,
-            633331766664,
-            975330866421,
-            997530864201,
-            999750842001,
-            8643319766532,
-            63333317666664,
-            )
+    kaprekar_constant_list = (0,
+                              495,
+                              6174,
+                              549945,
+                              631764,
+                              63317664,
+                              97508421,
+                              554999445,
+                              864197532,
+                              6333176664,
+                              9753086421,
+                              9975084201,
+                              86431976532,
+                              555499994445,
+                              633331766664,
+                              975330866421,
+                              997530864201,
+                              999750842001,
+                              8643319766532,
+                              63333317666664)
     current_number = number
-    kaprekar_tupel = (0,0)
+    kaprekar_tupel = (0, 0)
     kaprekar_number = -1
     iterations = 1
     while (kaprekar_number not in kaprekar_constant_list):
@@ -157,35 +178,19 @@ def kaprekar_algorithm(number : int, *args)-> (int,int):
         current_number = kaprekar_number
         iterations += 1
     # form and return kaprekar_tupel
-    kaprekar_tupel = (kaprekar_number, iterations-1)
+    kaprekar_tupel = (kaprekar_number, iterations - 1)
     return kaprekar_tupel
 
-# just debugthings
-
-def test_sorting_algorithm():
-    desc = False
-    number = int(input("Testinput: "))
-    desc_str = input("DESCENDING? (y/n)")
-    if desc_str == "y":
-        desc = True
-    elif desc_str == "n":
-        des = False
-    else:
-        print("Error")
-    output_int = sort_numbers_by_digits(number, desc)
-
-    print("Sorted number: " + str(output_int))
 
 def main():
-    number : str = input("Which number do you want to try?   ")
+    number: str = input("Which number do you want to try?   ")
     kaprekar_tupel = kaprekar_algorithm(int(number))
-    if(kaprekar_tupel == (0,0)):
+    if kaprekar_tupel == (0, 0):
         print("Error!")
     else:
         print("The kaprekar constant is: " + str(kaprekar_tupel[0]) +
               " with " + str(kaprekar_tupel[1]) + " Iterations.")
 
+
 if __name__ == "__main__":
     main()
-
-
