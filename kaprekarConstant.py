@@ -17,40 +17,35 @@ Dependencies: log10, ceil, floor from math
 #
 # TODO:
 # 1) optimize sorting algorithm
-# 2) implement Kaprekars Zykel like:
-#    71973 → 83952 → 74943 → 62964 → 71973 (with starting number 33363)
-# 3) implement special case for 2-, 5- and 7-digit-numbers;
+# 2) implement special case for 2-, 5- and 7-digit-numbers;
 #    there is no kapreka number
-# 4) implement algorithm for new kaprekar-constants (or new zykels)
+# 3) implement algorithm for new kaprekar-constants (or new zykels)
 # --- question: how many "iterations of a zykel" are needed,
 #               to prove the existence of a zykel?
+# 4) optimize zykel algorithm
+#
 #
 # Done:
 # - fix sorting algorithm
 # - optimize if-else-statement in sorting algorithm
+# - implement special case for zykel
 #
 
 
 # Math fun
-"""
-Returns a number sorted by digits. i
-(Note: Just programming exercise to avoid using str.sort() functions.
-       That's just all work and no play...)
-Parameters:
-    number (int): number, that should be sorted
-    desc (boolean): If True the number will be descending sorted
-                    otherwise ascending sorted
-Returns:
-    sorted_number (int): sorted number
-"""
-
 
 def sort_numbers_by_digits(number: int, desc: bool) -> int:
-    #
-    # Variables:
-    # - return Variable,
-    # - order of magnitude of given number
-    # - list for digits - index corresponds with digit (e.q. [5] = 5)
+    """
+    Returns a number sorted by digits. i
+    (Note: Just programming exercise to avoid using str.sort() functions.
+       That's just all work and no play...)
+    Parameters:
+    number (int): number, that should be sorted
+    desc (boolean): If True the number will be descending sorted
+                        otherwise ascending sorted
+    Returns:
+    sorted_number (int): sorted number
+    """
     sorted_number: int = 0
     order_of_magnitude: int = 0
     number_of_digits: [int, ...] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
@@ -100,7 +95,7 @@ def sort_numbers_by_digits(number: int, desc: bool) -> int:
     #
 
     current_digit = 9
-    while current_digit > 0:
+    while current_digit >= 0:
         if number_of_digits[current_digit] == 0:
             current_digit -= 1
         else:
@@ -112,21 +107,20 @@ def sort_numbers_by_digits(number: int, desc: bool) -> int:
     return sorted_number
 
 
-"""
-Returns a tupel of
--the kaprekar constant of one given number and
--the number of iterations to this number.
+def kaprekar_algorithm(number: int, *args):
+    """
+    Returns a tupel of
+    -the kaprekar constant of one given number and
+    -the number of iterations to this number.
 
-Parameters:
-    number (int): Number
+    Parameters:
+        number (int): Number
 
-Returns:
-    kaprekar_tupel (int,int): Tupel of the Kaprekar constant
-                                and the Iterations, to got there
-"""
-
-
-def kaprekar_algorithm(number: int, *args) -> (int, int):
+    Returns:
+        kaprekar_tupel (int,int,bool): Tupel of the Kaprekar constant
+                                and the Iterations, to got there; bool return
+                                if there are any zykel
+    """
     # Output 1
     print("Kaprekar Number?")
     print("----------------")
@@ -157,6 +151,16 @@ def kaprekar_algorithm(number: int, *args) -> (int, int):
     kaprekar_tupel = (0, 0)
     kaprekar_number = -1
     iterations = 1
+
+    #
+    # For "Zykel" like 75933 → 63954 → 61974 → 82962 → 75933 (start: 33364):
+    # Awkward Algorithm
+    # just remember all potential kaprekar constants, if there is a duplicate
+    # we have a zykel - not elegant nor effective just plain pragmatism
+    #
+
+    last_potential_kaprekar = [0]
+
     while (kaprekar_number not in kaprekar_constant_list):
         # Get first ordered number (asc.)
         number_one = sort_numbers_by_digits(current_number, False)
@@ -177,19 +181,33 @@ def kaprekar_algorithm(number: int, *args) -> (int, int):
         # new Number = potential Kaprekar Number; Iteration + 1
         current_number = kaprekar_number
         iterations += 1
+
+        # for zykels
+        if current_number in last_potential_kaprekar:
+            index_of_zykel = last_potential_kaprekar.index(current_number)
+            last_potential_kaprekar.append(current_number)
+            kaprekar_tupel = (
+                last_potential_kaprekar[index_of_zykel:], iterations, True)
+            return kaprekar_tupel
+        last_potential_kaprekar.append(current_number)
+
     # form and return kaprekar_tupel
-    kaprekar_tupel = (kaprekar_number, iterations - 1)
+    kaprekar_tupel = (kaprekar_number, iterations - 1, False)
     return kaprekar_tupel
 
 
 def main():
     number: str = input("Which number do you want to try?   ")
     kaprekar_tupel = kaprekar_algorithm(int(number))
-    if kaprekar_tupel == (0, 0):
+    if kaprekar_tupel == (0, 0, ...):
         print("Error!")
     else:
-        print("The kaprekar constant is: " + str(kaprekar_tupel[0]) +
-              " with " + str(kaprekar_tupel[1]) + " Iterations.")
+        if kaprekar_tupel[2]:  # if there is a zykel
+            print("There is a Zykel with " + str(kaprekar_tupel[0]) +
+                  " after " + str(kaprekar_tupel[1]) + " Iterations.")
+        else:
+            print("The kaprekar constant is: " + str(kaprekar_tupel[0]) +
+                  " with " + str(kaprekar_tupel[1]) + " Iterations.")
 
 
 if __name__ == "__main__":
